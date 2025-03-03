@@ -24,7 +24,7 @@ def main():
     user_prompt = f"insert here your base prompt. Below it will be the base malware we just read in\n\n{c_program_content}"
 
     completion = client.chat.completions.create(
-        model="deepseek-chat",
+        model="deepseek-reasoner",
         messages=[
             {
                 "role": "system",
