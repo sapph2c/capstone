@@ -1,0 +1,46 @@
+---
+- name: Ensure Jenkins agent directory exists
+  win_file:
+    path: "{{ jenkins_agent_dir }}"
+    state: directory
+
+- name: Download Jenkins agent.jar
+  win_get_url:
+    url: "{{ jenkins_master_url }}/jnlpJars/agent.jar"
+    dest: "{{ jenkins_agent_dir }}\\{{ jenkins_agent_jar }}"
+
+- name: Ensure OpenJDK 17 is installed
+  win_chocolatey:
+    name: temurin17
+    state: present
+
+- name: Install NSSM (Non-Sucking Service Manager)
+  win_chocolatey:
+    name: nssm
+    state: present
+
+- name: Stop existing JenkinsAgent service if running
+  win_service:
+    name: JenkinsAgent
+    state: stopped
+  ignore_errors: true
+
+- name: Remove existing JenkinsAgent service
+  win_command: nssm remove JenkinsAgent confirm
+  ignore_errors: true
+
+- name: Configure Jenkins agent as a Windows service
+  win_command: >
+    nssm install JenkinsAgent "{{ java_path }}"
+    -jar {{ jenkins_agent_dir }}\\{{ jenkins_agent_jar }}
+    -jnlpUrl {{ jenkins_master_url }}/computer/{{ jenkins_agent_name }}/jenkins-agent.jnlp
+    -secret {{ jenkins_agent_secret }}
+  args:
+    creates: "C:\\ProgramData\\nssm\\service\\JenkinsAgent"
+
+- name: Start Jenkins agent service
+  win_service:
+    name: JenkinsAgent
+    start_mode: auto
+    state: started
+
