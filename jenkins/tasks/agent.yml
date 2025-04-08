@@ -9,15 +9,30 @@
     url: "{{ jenkins_master_url }}/jnlpJars/agent.jar"
     dest: "{{ jenkins_agent_dir }}\\{{ jenkins_agent_jar }}"
 
-- name: Ensure OpenJDK 17 is installed
+- name: Ensure Temurin OpenJDK 17 is installed
   win_chocolatey:
     name: temurin17
     state: present
 
-- name: Install NSSM (Non-Sucking Service Manager)
-  win_chocolatey:
-    name: nssm
-    state: present
+- name: Validate java.exe path exists
+  win_stat:
+    path: "{{ java_path }}"
+  register: java_path_check
+
+- name: Fail if Java path is invalid
+  ansible.builtin.fail:
+    msg: "Java executable not found at {{ java_path }}!"
+  when: not java_path_check.stat.exists
+
+- name: Validate agent.jar exists
+  win_stat:
+    path: "{{ jenkins_agent_dir }}\\{{ jenkins_agent_jar }}"
+  register: agent_jar_check
+
+- name: Fail if agent.jar is missing
+  ansible.builtin.fail:
+    msg: "agent.jar not found at {{ jenkins_agent_dir }}\\{{ jenkins_agent_jar }}!"
+  when: not agent_jar_check.stat.exists
 
 - name: Stop existing JenkinsAgent service if running
   win_service:
@@ -29,18 +44,24 @@
   win_command: nssm remove JenkinsAgent confirm
   ignore_errors: true
 
-- name: Configure Jenkins agent as a Windows service
+- name: Install JenkinsAgent service with NSSM
   win_command: >
     nssm install JenkinsAgent "{{ java_path }}"
-    -jar {{ jenkins_agent_dir }}\\{{ jenkins_agent_jar }}
-    -jnlpUrl {{ jenkins_master_url }}/computer/{{ jenkins_agent_name }}/jenkins-agent.jnlp
-    -secret {{ jenkins_agent_secret }}
   args:
     creates: "C:\\ProgramData\\nssm\\service\\JenkinsAgent"
+
+- name: Set AppDirectory (working directory)
+  win_command: >
+    nssm set JenkinsAgent AppDirectory "{{ jenkins_agent_dir }}"
+
+- name: Set AppParameters (Jenkins agent run args)
+  win_command: >
+    nssm set JenkinsAgent AppParameters "-jar {{ jenkins_agent_jar }} -url {{ jenkins_master_url }}/ -secret {{ jenkins_agent_secret }} -name {{ jenkins_agent_name }} -webSocket -workDir {{ jenkins_agent_dir }}"
+  args:
+    chdir: "{{ jenkins_agent_dir }}"
 
 - name: Start Jenkins agent service
   win_service:
     name: JenkinsAgent
     start_mode: auto
     state: started
-
