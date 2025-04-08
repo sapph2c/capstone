@@ -1,9 +1,9 @@
 #SPDX-License-Identifier: MIT-0
 ---
-# vars file for jenkins
-jenkins_master_url: "replace with jenkins server url"
+jenkins_master_url: "http://server"
 jenkins_agent_name: "windows"
-jenkins_agent_secret: "replace with agent secret"
+jenkins_agent_secret: "generated-secret"
 jenkins_agent_dir: "C:\\Jenkins"
 jenkins_agent_jar: "agent.jar"
 java_path: "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.14.7-hotspot\\bin\\java.exe"
+
