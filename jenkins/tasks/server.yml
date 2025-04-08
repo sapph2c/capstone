@@ -1,0 +1,28 @@
+---
+- name: Download Jenkins GPG key
+  get_url:
+      url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+      dest: /usr/share/keyrings/jenkins-keyring.asc
+      mode: '0644'
+- name: Add Jenkins APT repository
+  apt_repository:
+      repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+      filename: jenkins
+      state: present
+
+- name: Update apt cache
+  apt:
+      update_cache: yes
+      cache_valid_time: 3600
+
+- name: Install Java and fontconfig dependencies
+  apt:
+      name:
+      - fontconfig
+      - openjdk-17-jre
+      state: present
+
+- name: Install Jenkins
+  apt:
+      name: jenkins
+      state: present

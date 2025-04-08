@@ -1,0 +1,16 @@
+---
+- name: Jenkins deploy Playbook
+  hosts: all
+  tasks:
+  - name: Include variables
+    include_vars: vars/main.yml
+
+  - name: Install Jenkins server on Debian
+    import_tasks: tasks/server.yml
+    when: ansible_facts['os_family']|lower == 'debian'
+    become: true
+
+  - name: Install Jenkins agent on Windows
+    import_tasks: tasks/agent.yml
+    when: ansible_facts['os_family']|lower == 'windows'
+
