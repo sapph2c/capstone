@@ -20,7 +20,7 @@ After completing this step, fill the following variables of the Ansible role:
 - windows_agent_ip
 - linux_server_ip
 
-Then from the root of the `jenkins` directory, run the following command:
+Then from the root of the `ansible` directory, run the following command:
 
 ```
 ansible-playbook -i inventory.ini main.yml

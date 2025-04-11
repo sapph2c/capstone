@@ -3,35 +3,28 @@ pipeline {
     environment {
         GITHUB_CREDS = credentials('github-pat')
         DEEPSEEK_CREDENTIALS = credentials('deepseek-api-key')
-        REPO_URL = 'https://github.com/<your-org>/<malware-repo>.git'
+        REPO_URL = 'https://github.com/sapph2c/capstone.git'
         PRODUCTION_BRANCH = 'production'
     }
     stages {
         stage('Checkout Code') {
             agent { label 'linux' }
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: scm.branches[0].name]],
-                    extensions: [
-                        [$class: 'CloneOption', depth: 1]
-                    ],
-                    userRemoteConfigs: [[
-                        url: env.REPO_URL,
-                        credentialsId: 'github-pat'
-                    ]]
-                ])
-                script {
-                    env.GIT_BRANCH = scm.branches[0].name
-                }
-                stash name: 'source', includes: '**'
+                checkout scmGit(
+                    branches: [[name: 'staging']],
+                    userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-plugin.git']])
+            }
+        }
+
+        stage('Generate shellcode') {
+            agent { label 'linux' }
+            steps {
             }
         }
 
         stage('Build Malware') {
-            agent { label 'windows' }
+            agent { label 'linux' }
             steps {
-                unstash 'source'
                 bat '''
                     echo Building malware...
                     build.bat
