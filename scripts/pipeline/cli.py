@@ -2,7 +2,6 @@ from pipeline.callback import Listener
 
 import click
 import sys
-import os
 
 
 DEFAULT_HOST = "0.0.0.0"
@@ -27,4 +26,4 @@ def cli():
 def callback(lhost, lport, timeout):
     listener = Listener(lhost, lport, timeout)
     result = listener.test()
-    sys.exit(result)
+    print(result)

