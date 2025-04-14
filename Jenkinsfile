@@ -94,16 +94,11 @@ pipeline {
                                     exit 1
                                 fi
                             '''
-                        }
-                    }
 
-                    post {
-                        always {
                             script {
                                 def result = sh(script: 'cat scripts/callback_result.txt', returnStdout: true).trim()
                                 echo "Callback listener exited with code: ${result}"
 
-                                // Trigger rerun if callback failed
                                 def shouldRetry = (result != '0')
 
                                 // Run Defender scan to detect AV alerts
@@ -115,7 +110,7 @@ pipeline {
                                 ''', returnStatus: true)
 
                                 if (avOutput != 0) {
-                                    echo "[!] Windows Defender detected the malware!"
+                                    echo '[!] Windows Defender detected the malware!'
                                     shouldRetry = true
                                 }
 
@@ -132,6 +127,5 @@ pipeline {
             }
         }
     }
-}
 }
 
