@@ -5,6 +5,7 @@ pipeline {
         DEEPSEEK_CREDENTIALS = credentials('deepseek-api-key')
         LHOST = '100.85.95.64'
         LPORT = 4444
+        HOSTNAME = 'student-virtual-machine'
         MALWARE_DIR = 'Simple/PE-Injector/PE-Injector.cpp'
         EXECUTABLE_NAME = 'injector.exe'
     }
