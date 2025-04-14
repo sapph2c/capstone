@@ -67,9 +67,9 @@ pipeline {
                             powershell '''
                                 $proc = Start-Process -FilePath 'notepad.exe' -PassThru
                                 Start-Sleep -Seconds 2
-                                $pid = $proc.Id
-                                Write-Host "Target PID: $pid"
-                                Start-Process -FilePath ".\\injector.exe" -ArgumentList $pid
+                                $targetPid = $proc.Id
+                                Write-Host "Target PID: $targetPid"
+                                Start-Process -FilePath ".\\injector.exe" -ArgumentList $targetPid
                             '''
                         }
                     }
