@@ -45,24 +45,28 @@ pipeline {
         stage('Generate shellcode') {
             agent { label 'linux' }
             steps {
+                echo 'TODO: implement this stage'
             }
         }
 
         stage('Build Malware') {
             agent { label 'linux' }
             steps {
+                echo 'TODO: implement this stage'
             }
         }
 
         stage('Execute and Detect') {
             agent { label 'windows' }
             steps {
+                echo 'TODO: implement this stage'
             }
         }
 
         stage('Process Results') {
             agent { label 'linux' }
             steps {
+                echo 'TODO: implement this stage'
             }
         }
     }
