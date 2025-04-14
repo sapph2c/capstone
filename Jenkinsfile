@@ -65,13 +65,13 @@ pipeline {
                         dir('malware') {
                             unstash 'compiled_malware'
                             bat '''
-                                powershell -Command "
-                                    $proc = Start-Process -FilePath 'notepad.exe' -PassThru
-                                    Start-Sleep -Seconds 2
-                                    $pid = $proc.Id
-                                    Write-Output 'Target PID: ' + $pid
-                                    Start-Process -FilePath '.\\injector.exe' -ArgumentList $pid
-                                "
+                                powershell -NoProfile -ExecutionPolicy Bypass -Command "& {
+                                $proc = Start-Process -FilePath 'notepad.exe' -PassThru
+                                Start-Sleep -Seconds 2
+                                $pid = $proc.Id
+                                Write-Output 'Target PID: ' + $pid
+                                Start-Process -FilePath '.\\injector.exe' -ArgumentList $pid
+                                }"
                             '''
                         }
                     }
