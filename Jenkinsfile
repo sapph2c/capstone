@@ -2,7 +2,6 @@ pipeline {
     agent none
 
     environment {
-        GITHUB_CREDS = 'github-pat'
         DEEPSEEK_CREDENTIALS = credentials('deepseek-api-key')
         REPO_URL = 'https://github.com/sapph2c/capstone.git'
         PRODUCTION_BRANCH = 'production'
@@ -17,7 +16,7 @@ pipeline {
                     branches: [[name: "${env.BRANCH_NAME ?: 'staging'}"]],
                     userRemoteConfigs: [[
                         url: "${env.REPO_URL}",
-                        credentialsId: "${env.GITHUB_CREDS}"
+                        credentialsId: 'github-pat'
                     ]]
                 ])
             }
