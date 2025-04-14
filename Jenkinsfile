@@ -2,7 +2,7 @@ pipeline {
     agent none
 
     environment {
-        GITHUB_CREDS = credentials('github-pat')
+        GITHUB_CREDS = 'github-pat'
         DEEPSEEK_CREDENTIALS = credentials('deepseek-api-key')
         REPO_URL = 'https://github.com/sapph2c/capstone.git'
         PRODUCTION_BRANCH = 'production'
