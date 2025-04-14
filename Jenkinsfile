@@ -3,8 +3,6 @@ pipeline {
 
     environment {
         DEEPSEEK_CREDENTIALS = credentials('deepseek-api-key')
-        REPO_URL = 'https://github.com/sapph2c/capstone.git'
-        PRODUCTION_BRANCH = 'production'
     }
 
     stages {
@@ -13,10 +11,10 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "${env.BRANCH_NAME ?: 'staging'}"]],
+                    branches: [[name: {'staging'}"]],
                     userRemoteConfigs: [[
-                        url: "${env.REPO_URL}",
-                        credentialsId: 'github-pat'
+                        url = 'git@github.com/sapph2c/capstone.git',
+                        credentialsId: 'git-ssh'
                     ]]
                 ])
             }
