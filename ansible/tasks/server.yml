@@ -1,28 +1,50 @@
 ---
 - name: Download Jenkins GPG key
   get_url:
-      url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
-      dest: /usr/share/keyrings/jenkins-keyring.asc
-      mode: '0644'
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    dest: /usr/share/keyrings/jenkins-keyring.asc
+    mode: '0644'
+
 - name: Add Jenkins APT repository
   apt_repository:
-      repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
-      filename: jenkins
-      state: present
+    repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+    filename: jenkins
+    state: present
+    update_cache: yes
 
-- name: Update apt cache
-  apt:
-      update_cache: yes
-      cache_valid_time: 3600
+- name: Add Python APT repository
+  apt_repository:
+    repo: ppa:deadsnakes/ppa
+    state: present
+    update_cache: yes
 
-- name: Install Java and fontconfig dependencies
+- name: Install Python 3.12 and Java related packages
   apt:
-      name:
-      - fontconfig
-      - openjdk-17-jre
-      state: present
+    - python3.12
+    - python3.12-venv
+    - python3.12-dev
+    - fontconfig
+    - openjdk-17-jre
+  state: present
+
+- name: Set Python 3.12 as default python3
+  command: update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
+- name: Download uv standalone installer
+  get_url:
+    url: https://astral.sh/uv/install.sh
+    dest: /tmp/install-uv.sh
+    mode: '0755'
+
+- name: Run uv installer with system-wide installation
+  shell: |
+    export UV_NO_PROMPT=1
+    export UV_INSTALL_DIR=/usr/local/bin
+    /tmp/install-uv.sh
+  args:
+    executable: /bin/bash
 
 - name: Install Jenkins
   apt:
-      name: jenkins
-      state: present
+    name: jenkins
+    state: present
