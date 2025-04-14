@@ -5,7 +5,7 @@ import sys
 import os
 
 
-DEFAULT_HOST = "127.0.0.1"
+DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = 4444
 DEFAULT_TIMEOUT = 60
 
