@@ -62,16 +62,14 @@ pipeline {
                 stage('Run Malware') {
                     agent { label 'windows' }
                     steps {
-                        dir('malware') {
+                        dir('testing') {
                             unstash 'compiled_malware'
-                            bat '''
-                                powershell -NoProfile -ExecutionPolicy Bypass -Command "& {
+                            powershell '''
                                 $proc = Start-Process -FilePath 'notepad.exe' -PassThru
                                 Start-Sleep -Seconds 2
                                 $pid = $proc.Id
-                                Write-Output 'Target PID: ' + $pid
-                                Start-Process -FilePath '.\\injector.exe' -ArgumentList $pid
-                                }"
+                                Write-Host "Target PID: $pid"
+                                Start-Process -FilePath ".\\injector.exe" -ArgumentList $pid
                             '''
                         }
                     }
