@@ -52,7 +52,6 @@ pipeline {
                     steps {
                         dir('scripts') {
                             sh '''
-                                uv install
                                 (uv run pipeline callback; echo $? > callback_result.txt) &
                                 echo $! > listener.pid
                             '''
