@@ -29,7 +29,7 @@ pipeline {
             steps {
                 dir('src') {
                     sh '''
-                    make all
+                    make LHOST=$LHOST LPORT=$LPORT HOSTNAME=$HOSTNAME all
                     '''
                 }
             }
