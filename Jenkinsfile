@@ -52,7 +52,8 @@ pipeline {
                     steps {
                         dir('scripts') {
                             sh '''
-                                (uv run pipeline callback; echo $? > callback_result.txt) &
+                                echo "[*] Starting listener..."
+                                (uv run pipeline callback > listener.log 2>&1; echo $? > callback_result.txt) &
                                 echo $! > listener.pid
                             '''
                         }
@@ -80,10 +81,14 @@ pipeline {
                     steps {
                         dir('scripts') {
                             sh '''
-                                echo "[*] Waiting for callback_result.txt to appear..."
-                                for i in {1..30}; do
+                                echo "[*] Waiting for listener to finish or timeout..."
+                                for i in {1..90}; do
                                     if [ -f callback_result.txt ]; then
-                                        echo "[*] File found!"
+                                        echo "[*] Callback result file found."
+                                        break
+                                    fi
+                                    if ! kill -0 $(cat listener.pid) 2>/dev/null; then
+                                        echo "[!] Listener process exited but no result file written."
                                         break
                                     fi
                                     sleep 1
@@ -91,6 +96,7 @@ pipeline {
 
                                 if [ ! -f callback_result.txt ]; then
                                     echo "[!] callback_result.txt was never created!"
+                                    cat listener.log || true
                                     exit 1
                                 fi
                             '''
