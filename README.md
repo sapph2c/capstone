@@ -12,6 +12,13 @@ The first step is to request the following two deployments within RLES:
 
 Once this is done, install Tailscale on both machines, as well as your host that you will be running Ansible from.
 
+TODO: 
+- Add dependency installation for compiling the Windows malware on debian in the Ansible tasks.
+- Add information for generating deepseek API key.
+- Add information for modifying the Jenksinfile and setting up Jenkins
+- Add re-try if fails in pipeline steps and archive errors as well as previously generated pre-build and post build scripts as artifacts which get passed to the `pipeline prebuild` and `pipeline postbuild` commands.
+- Add publishing of final binaries to a production branch or something.
+
 > [!NOTE]
 > Download link for Tailscale can be found here: https://tailscale.com/download
 

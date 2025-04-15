@@ -20,6 +20,7 @@ class Listener:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
                 listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 listener.bind((self.host, self.port))
+                listener.settimeout(self.timeout)
                 listener.listen(1)
                 conn, addr = listener.accept()
                 return 0
