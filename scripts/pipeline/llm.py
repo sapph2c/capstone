@@ -91,6 +91,7 @@ You are creating a production-grade post-build obfuscation script that MUST foll
 - POSIX-compliant, non-interactive
 - Directly executable in Jenkins' Bash environment
 - Any commands, sed especially MUST work and be compatible with modern C++
+- DO NOT USE WINE AT ALL COSTS, THIS CAN NOT BE A DEPENDENCY OF THE POST BUILD TOOLS USED
 
 EXAMPLE OUTPUT:
 #!/bin/bash
