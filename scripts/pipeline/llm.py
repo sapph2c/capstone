@@ -95,7 +95,8 @@ You are creating a production-grade post-build obfuscation script that MUST foll
 EXAMPLE OUTPUT:
 #!/bin/bash
 # Install required dependencies and tools
-< insert commands here (LLM will fill this out, not the end user)>
+sudo apt-get install -y <packages (LLM will fill this out)>
+< insert additional commands if needed here (LLM will fill this out, not the end user)>
 # Run commands to implement all required evasion techniques
 < insert commands here (LLM will fill this out, not the end user)>
 """
