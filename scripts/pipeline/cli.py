@@ -1,12 +1,13 @@
 from pipeline.callback import Listener
+from pipeline.llm import Client
 
 import click
-import sys
 
 
 DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = 4444
 DEFAULT_TIMEOUT = 60
+DEFAULT_URL = "https://api.deepseek.com"
 
 
 @click.group()
@@ -27,3 +28,12 @@ def callback(lhost, lport, timeout):
     listener = Listener(lhost, lport, timeout)
     result = listener.test()
     print(result)
+
+
+@cli.command(short_help="generate a pre-build script")
+@click.option("--api-key", envvar="DEEPSEEK_API_KEY")
+@click.option("--base-url", default=DEFAULT_URL)
+@click.option("--path", envvar="SHELLCODE_PATH")
+def prebuild(api_key, base_url, path):
+    client = Client(api_key, base_url, path)
+    client.prebuild()
