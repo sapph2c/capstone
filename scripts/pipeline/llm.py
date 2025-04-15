@@ -11,6 +11,7 @@ You are creating a production-grade pre-build obfuscation script that MUST follo
 - Properly escape all special characters for Bash
 - Use this pattern for single quotes inside double-quoted strings: `'"'"'`
 - Never leave unescaped quotes or shell special characters
+- The output should always start with #!/bin/bash, and end with the last command in the script. Nothing else should be include in the response. Again, respond ONLY with valid Bash script conte.t
 
 2. Pipeline Requirements:
 - Must work with Jenkins environment variables:
@@ -72,6 +73,7 @@ class Client:
             )
 
             script_content = response.choices[0].message.content.strip()
+            print(script_content)
 
             # Directly write the raw script output
             with open("prebuild.sh", "w") as f:
