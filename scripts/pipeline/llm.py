@@ -84,7 +84,7 @@ You are creating a production-grade post-build obfuscation script that MUST foll
   This means the post-build script will just be modifying the compiled executable.
 
 3. Required Evasion Techniques (MUST FULLY IMPLEMENT ALL):
-- Packing (packed / finalized executable must be injector.exe so it get's stashed properly by Jenkins)
+- Packing (packed / finalized executable must be named packed_injector.exe so it get's stashed properly by Jenkins)
 
 4. Safety:
 - POSIX-compliant, non-interactive

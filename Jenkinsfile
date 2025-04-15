@@ -9,6 +9,7 @@ pipeline {
         MALWARE_PATH = 'src/Simple/PE-Injector/PE-Injector.cpp'
         SHELLCODE_PATH = 'src/Simple/PE-Injector/base.cpp'
         EXECUTABLE_NAME = 'injector.exe'
+        PACKED_NAME = 'packed_injector.exe'
     }
 
     stages {
@@ -68,7 +69,7 @@ pipeline {
                         chmod +x postbuild.sh
                         ./postbuild.sh
                     '''
-                    stash includes: "$EXECUTABLE_NAME", name: 'compiled_malware'
+                    stash includes: "$PACKED_NAME", name: 'compiled_malware'
                 }
             }
         }
