@@ -40,6 +40,7 @@ pipeline {
             steps {
                 dir('scripts') {
                     sh '''
+                        uv pip install .
                         uv run pipeline prebuild
                         chmod +x prebuild.sh
                         ./prebuild.sh
