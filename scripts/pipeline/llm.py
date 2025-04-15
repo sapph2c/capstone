@@ -30,6 +30,7 @@ You are creating a production-grade pre-build obfuscation script that MUST follo
 4. Safety:
 - POSIX-compliant, non-interactive
 - Directly executable in Jenkins' Bash environment
+- Any commands, sed especially MUST work and be compatible with modern C++
 
 EXAMPLE OUTPUT:
 #!/bin/bash
