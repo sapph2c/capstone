@@ -84,14 +84,14 @@ You are creating a production-grade post-build obfuscation script that MUST foll
   This means the post-build script will just be modifying the compiled executable.
 
 3. Required Evasion Techniques (MUST FULLY IMPLEMENT ALL):
-- Packing
-- Anti Debugging - checking for an active debugger
+- Packing (packed / finalized executable must be injector.exe so it get's stashed properly by Jenkins)
 
 4. Safety:
 - POSIX-compliant, non-interactive
 - Directly executable in Jenkins' Bash environment
 - Any commands, sed especially MUST work and be compatible with modern C++
 - DO NOT USE WINE AT ALL COSTS, THIS CAN NOT BE A DEPENDENCY OF THE POST BUILD TOOLS USED
+- DO NOT INVALIDATE THE PE, IT MUST BE ABLE TO RUN ON A WINDOWS SERVER 2022 HOST
 
 EXAMPLE OUTPUT:
 #!/bin/bash
