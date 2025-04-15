@@ -34,12 +34,15 @@ EXAMPLE OUTPUT:
 
 
 class Client:
-    def __init__(self, api_key: str, base_url: str, path: str):
+    def __init__(
+        self, api_key: str, base_url: str, shellcode_path: str, malware_path: str
+    ):
         self.client = OpenAI(
             base_url=base_url,
             api_key=api_key,
         )
-        self.path = path
+        self.shellcode_path = shellcode_path
+        self.malware_path = malware_path
 
     def prebuild(self):
         """
@@ -47,7 +50,7 @@ class Client:
         """
         with open(self.path, "r") as file:
             malware = file.read()
-            user_prompt = f"$SHELLCODE_PATH: src/Simple/PE-Injector/base.cpp\n$MALWARE_PATH: src/Simple/PE-Injector/PE-Injector.cpp\nmalware: \n{malware}"
+            user_prompt = f"$SHELLCODE_PATH: {self.shellcode_path}\n$MALWARE_PATH: {self.malware_path}\nmalware: \n{malware}"
 
             messages = [
                 {"role": "system", "content": SYSTEM_PROMPT},
