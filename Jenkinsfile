@@ -49,11 +49,25 @@ pipeline {
             }
         }
 
-        stage('Compile and Stash Malware') {
+        stage('Compile malware') {
             agent { label 'linux' }
             steps {
                 dir('scripts') {
                     sh 'x86_64-w64-mingw32-g++ -std=c++17 -static -o $EXECUTABLE_NAME $MALWARE_PATH -lpsapi'
+                }
+            }
+        }
+
+        stage('Generate and run post-build script') {
+            agent { label 'linux' }
+            steps {
+                dir('scripts') {
+                    sh '''
+                        export PYTHONPATH=$PWD
+                        uv run pipeline postbuild
+                        chmod +x postbuild.sh
+                        ./postbuild.sh
+                    '''
                     stash includes: "$EXECUTABLE_NAME", name: 'compiled_malware'
                 }
             }
@@ -84,7 +98,7 @@ pipeline {
                                 dir('testing') {
                                     unstash 'compiled_malware'
                                     powershell '''
-                                        Start-Sleep -Seconds 15
+                                        Start-Sleep -Seconds 20
                                         $proc = Start-Process -FilePath 'notepad.exe' -PassThru
                                         Start-Sleep -Seconds 2
                                         $targetPid = $proc.Id
