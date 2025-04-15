@@ -33,7 +33,7 @@ def callback(lhost, lport, timeout):
 @cli.command(short_help="generate a pre-build script")
 @click.option("--api-key", envvar="DEEPSEEK_API_KEY")
 @click.option("--base-url", default=DEFAULT_URL)
-@click.option("--path", envvar="SHELLCODE_PATH")
+@click.option("--path", envvar="BASE_MALWARE_PATH")
 def prebuild(api_key, base_url, path):
     client = Client(api_key, base_url, path)
     client.prebuild()
