@@ -2,6 +2,7 @@ from pipeline.callback import Listener
 from pipeline.llm import Client
 
 import click
+import sys
 
 
 DEFAULT_HOST = "0.0.0.0"
@@ -27,7 +28,7 @@ def cli():
 def callback(lhost, lport, timeout):
     listener = Listener(lhost, lport, timeout)
     result = listener.test()
-    print(result)
+    sys.exit(result)
 
 
 @cli.command(short_help="generate a pre-build script")

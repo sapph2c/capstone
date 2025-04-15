@@ -83,9 +83,9 @@ pipeline {
                             steps {
                                 dir('scripts') {
                                     script {
-                                        def result = sh(script: 'export PYTHONPATH=$PWD uv run pipeline callback', returnStdout: true).trim()
-                                        writeFile file: 'callback_result.txt', text: result
-                                        env.CALLBACK_RESULT = result
+                                        def result = sh(script: 'export PYTHONPATH=$PWD uv run pipeline callback', returnStatus: true)
+                                        writeFile file: 'callback_result.txt', text: result.toString()
+                                        env.CALLBACK_RESULT = result.toString()
                                     }
                                     stash includes: 'callback_result.txt', name: 'callback_result'
                                 }
