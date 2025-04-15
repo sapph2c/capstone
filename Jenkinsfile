@@ -40,6 +40,7 @@ pipeline {
             steps {
                 dir('scripts') {
                     sh '''
+                        export PYTHONPATH=$PWD
                         uv pip install .
                         uv run pipeline prebuild
                         chmod +x prebuild.sh
@@ -69,7 +70,7 @@ pipeline {
                             steps {
                                 dir('scripts') {
                                     script {
-                                        def result = sh(script: 'uv run pipeline callback', returnStdout: true).trim()
+                                        def result = sh(script: 'export PYTHONPATH=$PWD uv run pipeline callback', returnStdout: true).trim()
                                         writeFile file: 'callback_result.txt', text: result
                                         env.CALLBACK_RESULT = result
                                     }
