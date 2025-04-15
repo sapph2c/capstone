@@ -48,7 +48,7 @@ class Client:
         """
         prebuild generates a pre-build script to be ran in the CI/CD pipeline.
         """
-        with open(self.path, "r") as file:
+        with open(self.malware_path, "r") as file:
             malware = file.read()
             user_prompt = f"$SHELLCODE_PATH: {self.shellcode_path}\n$MALWARE_PATH: {self.malware_path}\nmalware: \n{malware}"
 
