@@ -9,9 +9,6 @@ git clone git@github.com:sapph2c/capstone.git
 
 ## Provision the Infrastructure
 
-> [!NOTE]
-> Ansible is required to setup the infrastructure. An installation guide can be found [here](https://docs.ansible.com/ansible/latest/installation_guide/index.html).
-
 The first step is to request the following two deployments within RLES:
 
 - Ubuntu 22.04 Desktop (any debian based system should work)
@@ -25,7 +22,15 @@ For the Linux host, go to https://login.tailscale.com/admin/machines, click `Add
 
 ## Setup Hosts for Ansible
 
-Install openssh server on the Linux machine:
+> [!NOTE]
+> Ansible is required to configure the infrastructure. An installation guide can be found [here](https://docs.ansible.com/ansible/latest/installation_guide/index.html).
+
+Install openssh-server on the Linux machine:
+
+```
+sudo apt-get update -y
+sudo apt install openssh-server -y
+```
 
 Next, add sudo/admin user with username `ansible` on both the Linux & Windows hosts.
 
