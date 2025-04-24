@@ -21,9 +21,11 @@ Once this is done, install Tailscale on both machines, as well as your host that
 
 Download link for Tailscale can be found here: https://tailscale.com/download
 
-I recommend for the Linux host going to https://login.tailscale.com/admin/machines, clicking `Add Device` -> `Linux server` -> `Generate install script`, copying said script and then running that on the host to setup Tailscale.
+For the Linux host, go to https://login.tailscale.com/admin/machines, click `Add Device` -> `Linux server` -> `Generate install script`, and then copy and run the script on the device.
 
 ## Setup Hosts for Ansible
+
+Install openssh server on the Linux machine:
 
 Next, add sudo/admin user with username `ansible` on both the Linux & Windows hosts.
 
@@ -85,7 +87,44 @@ Then go to: https://platform.deepseek.com/api_keys and click `Create new API Key
 Next you need to add funds to your account at: https://platform.deepseek.com/top_up
 
 I recommend adding $2 to start, as we used $0.14 worth of tokens over the course of our testing.
- 
+
+## Post Installation Jenkins Server Configuration
+
+### Setup credentials
+
+Next, go to: http://jenkins-server-ip:8080/manage/credentials/store/system/domain/_/
+
+Click `Add Credentials`, set Kind to `Secret text`, ID to `deepseek-api-key`, and paste the previously created API key into the Secret field.
+
+Now we'll add an SSH key so Jenkins pipeline can authenticate to GitHub and access the repository. 
+
+First, log into the Linux host as the jenkins user and generate an SSH key pair:
+
+```
+sudo su jenkins
+ssh-keygen -t ed25519
+```
+
+Then, Click `Add Credentials`, Set Kind to `SSH Username with private key`, ID to `git-ssh`, Username to `jenkins`, and enter the private key which can be found in `/var/lib/jenkins/.ssh/id_ed25519`. Leave rest as defaults.
+
+Jenkins pipelines also require a GitHub personal access token (PAT), so this also needs to be generated and added at https://github.com/settings/tokens.
+
+Click `Add Credentials`, Set Kind to `Username with password`, username as your GitHub username, ID to `github-pat`, and copy and paste the generated PAT as the password.
+
+### Configure Pipeline
+
+Go to Jenkins Dashboard. Click `New Item`. Set item name as `Malware Pipeline`, and item type as `Multibranch Pipeline`.
+
+Under Branch Sources, click `Add source` -> `GitHub`. Then under credentials, select `github-pat`. Fill in the repository URL.
+
+Under Scan Repository Triggers, check `Periodically if not otherwise run`, and set the interval to 1 minute.
+
+Click `Apply`, then `Save`
+
+## Running the Pipeline
+
+To trigger a pipeline run, push code to the `staging` branch in the repository. Jenkins will scan the repo branch for changes every minute.
+
 ## Future Work
 
 - Add re-try if fails in pipeline steps and archive errors as well as previously generated pre-build and post build scripts as artifacts which get passed to the `pipeline prebuild` and `pipeline postbuild` commands.
@@ -94,5 +133,4 @@ I recommend adding $2 to start, as we used $0.14 worth of tokens over the course
 ## Docs todo
 
 - Add dependency installation for compiling the Windows malware on debian in the Ansible tasks.
-- Add information for modifying the Jenksinfile and setting up Jenkins
   
