@@ -102,7 +102,7 @@ class Client:
             )
 
             response = self.client.chat.completions.create(
-                model="deepseek-r1",
+                model="deepseek-reasoner",
                 temperature=0,
                 messages=[
                     {"role": "system", "content": PRE_SYSTEM_PROMPT},
@@ -125,7 +125,7 @@ class Client:
         user_prompt = f"EXECUTABLE_NAME: {self.executable_name}"
 
         response = self.client.chat.completions.create(
-            model="deepseek-r1",
+            model="deepseek-reasoner",
             temperature=0,
             messages=[
                 {"role": "system", "content": POST_SYSTEM_PROMPT},
