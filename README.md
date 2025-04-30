@@ -4,6 +4,7 @@ The objective of this project is to determine the practicality of using publicly
 
 ## Project Structure
 
+```
 capstone
 ├── Jenkinsfile
 ├── ansible/
@@ -12,6 +13,7 @@ capstone
 └── scripts/
     ├── pipeline/
     └── src/
+```
 
 - `Jenkinsfile` holds the CI/CD pipeline configuration.
 - `ansible` contains all the Ansible used to setup the Jenkins server & agent.
