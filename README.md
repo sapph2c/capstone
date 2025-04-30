@@ -1,5 +1,22 @@
 # Capstone Project: Developing Evasive Malware with LLMs
 
+The objective of this project is to determine the practicality of using publicly available LLMs to modify malware samples to be more evasive, using sets of effective malware development strategies.
+
+## Project Structure
+
+capstone
+├── Jenkinsfile
+├── ansible/
+│   ├── tasks/
+│   └── vars/
+└── scripts/
+    ├── pipeline/
+    └── src/
+
+- `Jenkinsfile` holds the CI/CD pipeline configuration.
+- `ansible` contains all the Ansible used to setup the Jenkins server & agent.
+- `scripts` has the malware source code and the `pipeline` CLI tool used for calling the LLMs and running the malware callback tester.
+
 ## Getting Started:
 
 Clone the repo:
@@ -128,14 +145,12 @@ Click `Apply`, then `Save`
 
 ## Running the Pipeline
 
-To trigger a pipeline run, push code to the `staging` branch in the repository. Jenkins will scan the repo branch for changes every minute.
+Modify the `LHOST` and `HOSTNAME` environment variable in the Jenkinsfile to the IP and hostname of the Jenkins server.
+
+Then, to trigger a pipeline run, push code changes to the `staging` branch in the repository. Jenkins will scan the repo branch for changes every minute.
 
 ## Future Work
 
 - Add re-try if fails in pipeline steps and archive errors as well as previously generated pre-build and post build scripts as artifacts which get passed to the `pipeline prebuild` and `pipeline postbuild` commands.
 - Add publishing of final binaries to a GitHub release.
 
-## Docs todo
-
-- Add dependency installation for compiling the Windows malware on debian in the Ansible tasks.
-  

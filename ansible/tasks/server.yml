@@ -18,13 +18,18 @@
     state: present
     update_cache: yes
 
-- name: Install Python 3.12 and Java related packages
+- name: Install Required Packages
   apt:
+    - curl
+    - git
+    - software-properties-common
     - python3.12
     - python3.12-venv
     - python3.12-dev
     - fontconfig
     - openjdk-17-jre
+    - mingw-w64
+    - g++-mingw-w64-x86-64
   state: present
 
 - name: Set Python 3.12 as default python3
