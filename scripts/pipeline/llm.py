@@ -1,5 +1,6 @@
 from openai import OpenAI
 
+# NOTE: Portions of the PRE_SYSTEM_PROMPT and POST_SYSTEM_PROMPT were generated via ChatGPT 4o-mini and heavily tweaked and modified by a human author.
 
 PRE_SYSTEM_PROMPT = r"""
 You are creating a production-grade pre-build obfuscation script that MUST follow these rules:
@@ -139,10 +140,8 @@ class Client:
             script_content = response.choices[0].message.content.strip()
             print(script_content)
 
-            # Directly write the raw script output
             with open("prebuild.sh", "w") as f:
-                f.write(script_content)
-                f.write("\n")  # Ensure trailing newline
+                f.write(f"{script_content}\n")
 
     def postbuild(self):
         """
@@ -161,7 +160,5 @@ class Client:
         script_content = response.choices[0].message.content.strip()
         print(script_content)
 
-        # Directly write the raw script output
         with open("postbuild.sh", "w") as f:
-            f.write(script_content)
-            f.write("\n")  # Ensure trailing newline
+            f.write(f"{script_content}\n")
